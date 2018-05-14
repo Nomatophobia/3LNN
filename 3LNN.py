@@ -6,8 +6,10 @@ from sklearn.model_selection import KFold
 
 import sys
 
+DATA_DIR = 'data/data_tp1'
 
-def get_data(filename='data_tp1'):
+
+def get_data(filename=DATA_DIR):
     data = np.genfromtxt(filename, delimiter=',')
     labels = data[:, 0]
     imgs = data[:, 1:]
