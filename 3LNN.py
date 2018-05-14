@@ -2,6 +2,7 @@ import numpy as np
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.optimizers import SGD
+from keras.utils import to_categorical
 from sklearn.model_selection import KFold
 
 import sys
@@ -9,6 +10,7 @@ import sys
 DATA_DIR = 'data/data_tp1'
 
 
+# Read data from file
 def get_data(filename=DATA_DIR):
     data = np.genfromtxt(filename, delimiter=',')
     labels = data[:, 0]
@@ -16,12 +18,14 @@ def get_data(filename=DATA_DIR):
     return imgs, labels
 
 
+# Split data into folds
 def split_data(input_data, folds=5):
     print('Splitting data in', folds, 'folds')
     kf = KFold(n_splits=folds, shuffle=True)
     return(kf.split(input_data))
 
 
+# Split data naively into training and testing sets
 def naive_split(input_data, labels, train_size=4000):
     x_train = input_data[:train_size]
     y_train = labels[:train_size]
@@ -32,6 +36,12 @@ def naive_split(input_data, labels, train_size=4000):
     return (x_train, y_train, x_test, y_test)
 
 
+# Convert data to one hot encoding format
+def one_hot(data, num_classes=None):
+    return to_categorical(data, num_classes=num_classes)
+
+
+# Define Neural Network model
 def define_model(
                 x_train,
                 y_train,
@@ -71,7 +81,7 @@ def define_model(
               )
 
     score = model.evaluate(x_test, y_test, batch_size=128)
-    print(score)
+    return score
 
 
 def main(argv):
@@ -82,9 +92,9 @@ def main(argv):
         print("no input file, using default")
         imgs, labels = get_data()
 
+    labels = one_hot(labels, 10)
     x_train, y_train, x_test, y_test = naive_split(imgs, labels)
-    print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
-    # split_data(input_data)
+    # define_model(x_train, y_train, x_test, y_test)
 
 
 if __name__ == '__main__':
