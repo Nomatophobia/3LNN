@@ -30,6 +30,48 @@ def naive_split(input_data, labels, train_size=4000):
     return (x_train, y_train, x_test, y_test)
 
 
+def define_model(
+                x_train,
+                y_train,
+                x_test=None,
+                y_test=None,
+                input_shape=784,
+                hidden_dim=50,
+                activation='sigmoid',
+                num_classes=10
+                ):
+
+    model = Sequential
+    model.add(Dense(
+                    hidden_dim,
+                    activation=activation,
+                    input_shape=input_shape,
+                   ))
+
+    model.add(Dense(
+                    num_classes,
+                    activation=activation,
+                    input_shape=hidden_dim,
+                   ))
+
+    sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+    model.compile(
+                  loss='categorical_crossentropy',
+                  optimizer=sgd,
+                  metrics=['accuracy']
+                  )
+
+    model.fit(
+              x_train,
+              y_train,
+              epochs=20,
+              batch_size=128
+              )
+
+    score = model.evaluate(x_test, y_test, batch_size=128)
+    print(score)
+
+
 def main(argv):
     if len(argv) > 1:
         filename = argv[1]
