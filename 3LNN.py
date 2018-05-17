@@ -42,45 +42,48 @@ def one_hot(data, num_classes=None):
 
 
 # Define Neural Network model
-def define_model(
+def run_model(
                 x_train,
                 y_train,
-                x_test=None,
-                y_test=None,
-                input_shape=784,
+                x_test,
+                y_test,
+                input_dim=784,
                 hidden_dim=50,
                 activation='sigmoid',
                 num_classes=10
                 ):
 
-    model = Sequential
+    model = Sequential()
     model.add(Dense(
                     hidden_dim,
                     activation=activation,
-                    input_shape=input_shape,
+                    input_dim=input_dim,
                    ))
 
     model.add(Dense(
                     num_classes,
                     activation=activation,
-                    input_shape=hidden_dim,
+                    input_dim=hidden_dim,
                    ))
 
-    sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+    # sgd = SGD(lr=0.005, decay=1e-6, momentum=0.9, nesterov=True)
+    sgd = SGD(lr=0.1)
     model.compile(
                   loss='categorical_crossentropy',
                   optimizer=sgd,
                   metrics=['accuracy']
                   )
 
-    model.fit(
+    score = model.fit(
               x_train,
               y_train,
-              epochs=20,
-              batch_size=128
-              )
+              epochs=50,
+              verbose=1,
+              batch_size=128,
+              validation_data=(x_test, y_test),
+              shuffle=True
+             )
 
-    score = model.evaluate(x_test, y_test, batch_size=128)
     return score
 
 
@@ -94,7 +97,8 @@ def main(argv):
 
     labels = one_hot(labels, 10)
     x_train, y_train, x_test, y_test = naive_split(imgs, labels)
-    # define_model(x_train, y_train, x_test, y_test)
+    history = run_model(x_train, y_train, x_test, y_test)
+    print(history.history['acc'])
 
 
 if __name__ == '__main__':
