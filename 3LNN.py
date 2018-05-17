@@ -43,15 +43,15 @@ def one_hot(data, num_classes=None):
 
 # Define Neural Network model
 def run_model(
-                x_train,
-                y_train,
-                x_test,
-                y_test,
-                input_dim=784,
-                hidden_dim=50,
-                activation='sigmoid',
-                num_classes=10
-                ):
+              x_train,
+              y_train,
+              x_test,
+              y_test,
+              input_dim=784,
+              hidden_dim=50,
+              activation='sigmoid',
+              num_classes=10
+             ):
 
     model = Sequential()
     model.add(Dense(
@@ -66,7 +66,6 @@ def run_model(
                     input_dim=hidden_dim,
                    ))
 
-    # sgd = SGD(lr=0.005, decay=1e-6, momentum=0.9, nesterov=True)
     sgd = SGD(lr=0.1)
     model.compile(
                   loss='categorical_crossentropy',
@@ -97,8 +96,16 @@ def main(argv):
 
     labels = one_hot(labels, 10)
     x_train, y_train, x_test, y_test = naive_split(imgs, labels)
-    history = run_model(x_train, y_train, x_test, y_test)
-    print(history.history['acc'])
+
+    batch_sizes = [1, 10, 50, x_train.shape[0]]
+    learning_rates = [0.5, 1, 10]
+    hidden_dims = [25, 50, 100]
+
+    for batch_size in batch_sizes:
+        for lr in learning_rates:
+            for hidden_dim in hidden_dims:
+                history = run_model(x_train, y_train, x_test, y_test)
+
 
 
 if __name__ == '__main__':
