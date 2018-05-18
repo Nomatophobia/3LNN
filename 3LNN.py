@@ -4,7 +4,8 @@ from keras.layers import Dense
 from keras.optimizers import SGD
 from keras.utils import to_categorical
 from sklearn.model_selection import KFold
-
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 import sys
 
 DATA_DIR = 'data/data_tp1'
@@ -47,10 +48,13 @@ def run_model(
               y_train,
               x_test,
               y_test,
+              learning_rate=0.1,
+              batch_size=50,
               input_dim=784,
               hidden_dim=50,
               activation='sigmoid',
-              num_classes=10
+              num_classes=10,
+              epochs=50
              ):
 
     model = Sequential()
@@ -66,24 +70,54 @@ def run_model(
                     input_dim=hidden_dim,
                    ))
 
-    sgd = SGD(lr=0.1)
+    sgd = SGD(lr=learning_rate)
     model.compile(
                   loss='categorical_crossentropy',
                   optimizer=sgd,
                   metrics=['accuracy']
                   )
 
-    score = model.fit(
+    history = model.fit(
               x_train,
               y_train,
-              epochs=50,
-              verbose=1,
-              batch_size=128,
+              epochs=epochs,
+              verbose=2,
+              batch_size=batch_size,
               validation_data=(x_test, y_test),
               shuffle=True
              )
 
-    return score
+    return history
+
+
+def plot_results(history, out_file):
+    train_acc = history.history['acc']
+    val_acc = history.history['val_acc']
+
+    type(val_acc)
+
+    plt.plot(range(len(train_acc)), train_acc, color='blue')
+    plt.plot(range(len(train_acc)), val_acc, color='orange')
+
+    # add grid lines
+    plt.grid(linestyle="dashed")
+
+    # change limits to improve visibility
+    plt.xlim((0, len(train_acc)-1))
+    # plt.ylim((0, 105))
+
+    # add labels
+    plt.xlabel("Epochs")
+    plt.ylabel("Accuracy (%)")
+
+    # add legends
+    legend = mpatches.Patch(color='blue', label='Training')
+    legend2 = mpatches.Patch(color='orange', label='Validation')
+    plt.legend(handles=[legend, legend2])
+
+    # save plot to file
+    plt.savefig(out_file)
+    plt.gcf().clear()
 
 
 def main(argv):
@@ -97,15 +131,31 @@ def main(argv):
     labels = one_hot(labels, 10)
     x_train, y_train, x_test, y_test = naive_split(imgs, labels)
 
+    # batch_sizes = [x_train.shape[0]]
     batch_sizes = [1, 10, 50, x_train.shape[0]]
     learning_rates = [0.5, 1, 10]
     hidden_dims = [25, 50, 100]
 
-    for batch_size in batch_sizes:
-        for lr in learning_rates:
-            for hidden_dim in hidden_dims:
-                history = run_model(x_train, y_train, x_test, y_test)
+    # history = run_model(x_train, y_train, x_test, y_test, learning_rate=0.5, batch_size=4000, hidden_dim=50, epochs=50)
+    # plot_results(history, 'test')
 
+    done = 0
+    total = len(batch_sizes)*len(learning_rates)*len(hidden_dims)
+    for batch_size in batch_sizes:
+        for learning_rate in learning_rates:
+            for hidden_dim in hidden_dims:
+                print(done, "of", total)
+                history = run_model(
+                                    x_train,
+                                    y_train,
+                                    x_test,
+                                    y_test,
+                                    learning_rate=learning_rate,
+                                    batch_size=batch_size,
+                                    hidden_dim=hidden_dim
+                                    )
+                plot_results(history, "result"+str(done))
+                done += 1
 
 
 if __name__ == '__main__':

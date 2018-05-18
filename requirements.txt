@@ -2,3 +2,4 @@ tensorflow >= 1.8
 keras >= 2.1
 sklearn
 scikit-learn
+matplotlib
